@@ -1,0 +1,15 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+.chart-container{
+    display: flex;
+}
+
+.chart{
+    width: 320px;
+    height: 240px;
+    flex: auto;
+}

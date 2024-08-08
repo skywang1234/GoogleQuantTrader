@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Analysis for Google/Alphabet Inc Class C (GOOG)</h1>
+        <div>Cumulative MACD Profit: $<span id="cumulative-profit">0.00</span></div>
+        <div>Cumulative RSI Profit: $<span id="cumulative-rsi-profit">0.00</span></div>
+        <div class="chart-container">
+            <img class="chart" id="priceImage" src="">
+            <img class="chart" id="oscillatorImage" src="" alt="Chart will be displayed here">
+            <img class="chart" id="rsiPriceImage" src="" alt="Chart will be displayed here">
+            <img class="chart" id="rsiImage" src="" alt="Chart will be displayed here">    
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
