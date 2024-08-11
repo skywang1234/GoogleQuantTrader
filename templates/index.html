@@ -4,18 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Righteous&display=swap" rel="stylesheet">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- <link rel="stylesheet" href="../static/css/style.css"> -->
 </head>
 <body>
+    <div class="navbar">
+        <a href="#" class="logo">Momentum Trader</a>
+        <a href="https://github.com/skywang1234/GoogleQuantTrader" class="icon"><i class="fa fa-github"></i></a>
+    </div>
     <div class="container">
-        <h1>Stock Analysis for Google/Alphabet Inc Class C (GOOG)</h1>
-        <div>Cumulative MACD Profit: $<span id="cumulative-profit">0.00</span></div>
-        <div>Cumulative RSI Profit: $<span id="cumulative-rsi-profit">0.00</span></div>
         <div class="chart-container">
-            <img class="chart" id="priceImage" src="">
-            <img class="chart" id="oscillatorImage" src="" alt="Chart will be displayed here">
-            <img class="chart" id="rsiPriceImage" src="" alt="Chart will be displayed here">
-            <img class="chart" id="rsiImage" src="" alt="Chart will be displayed here">    
+            <div class="card">
+                <div class="card-title">MACD Price</div>
+                <img class="chart" id="priceImage" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/White_box_35x100.png" alt="Retrieving Chart...">
+            </div>
+            <div class="card" style="background-color: #38BDF8;">
+                <div class="card-title">MACD OSC</div>
+                <img class="chart" id="oscillatorImage" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/White_box_35x100.png" alt="Retrieving Chart...">
+            </div>
+            <div class="info card" style="background-color: #818CF8;">
+                <div class="card-title">MACD Stock Trading/Analysis for GOOG (Google)</div>
+                <div class="card-text">How it works: A moving average convergence/divergence (MACD) is a popular technical indicator to help investors identify entry and exit points. This MACD line is calculated by subtracting the 21 day exponential moving average (EMA) from the 10 day EMA, buying when the oscillator approaches 0 from below and selling when the oscillator approaches from above. The MACD is calculated <strong>daily</strong> at market close. The profit per share is updated every trade pair (long+short).</div>
+                <span style="display: block;"></span>
+                <br>
+                <div class="card-text" style="color: white">Profit Profit (per share): <span id="cumulative-profit" class="card-text">Retrieving Data...</span></div>
+            </div>
+            <div class="card">
+                <div class="card-title">RSI Price </div>
+                <img class="chart" id="rsiPriceImage" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/White_box_35x100.png" alt="Retrieving Chart...">
+            </div>
+            <div class="card" style="background-color: #38BDF8;">
+                <div class="card-title">RSI</div>
+                <img class="chart" id="rsiImage" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/White_box_35x100.png" alt="Retrieving Chart...">
+            </div>
+            <div class="info card" style="background-color: #818CF8;">
+                <div class="card-title">RSI Stock Trading/Analysis for GOOG (Google)</div>
+                <div class="card-text">How it works: The relative strength index (RSI) is a popular momentum oscillator which informs investors about bullish and bearish momentum. An asset is usually considered overbought when the RSI is above 70 and oversold when it is below 30. The RSI line crossing below the overbought line or above oversold line is often seen by traders as a signal to buy or sell. The RSI is calculated <strong>daily</strong> at market close. The profit per share is updated every trade pair (long+short).</div>
+                <br>
+                <div class="card-text" style="color: white">Profit (per share): <span id="cumulative-rsi-profit" class="card-text">Retrieving Data...</span></div>
+            </div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

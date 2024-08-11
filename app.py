@@ -1,5 +1,4 @@
 import os
-import time
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -7,7 +6,6 @@ import matplotlib.pyplot as plt
 from flask import Flask, jsonify, render_template
 from io import BytesIO
 import base64
-from threading import Thread
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -91,96 +89,102 @@ def rsi_signal_generation(df, method, n=14):
 
 def fetch_and_generate_chart():
     global price_image, oscillator_image
-    while True:
-        try:
-            end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-            df = yf.download(TICKER, start=start_date, end=end_date)
-            signals = signal_generation(df, MA1, MA2)
-            
-            # Generate the price image
-            fig, ax = plt.subplots()
-            df['Close'].plot(label=TICKER, ax=ax)
-            ax.plot(signals.loc[signals['signals'] == 1].index, signals['Close'][signals['signals'] == 1], '^', markersize=10, color='g', lw=0, label='LONG')
-            ax.plot(signals.loc[signals['signals'] == -1].index, signals['Close'][signals['signals'] == -1], 'v', markersize=10, color='r', lw=0, label='SHORT')
-            plt.legend(loc='best')
-            plt.grid(True)
-            plt.title('Positions')
-            figfile = BytesIO()
-            plt.savefig(figfile, format='png')
-            figfile.seek(0)
-            price_image = base64.b64encode(figfile.getvalue()).decode()
-            plt.close(fig)
+    try:
+        end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        df = yf.download(TICKER, start=start_date, end=end_date)
+        signals = signal_generation(df, MA1, MA2)
 
-            # Generate the oscillator image
-            fig, (cx, bx) = plt.subplots(nrows=2, ncols=1)
-            signals['oscillator'].plot(kind='bar', color='r', ax=cx)
-            cx.legend(loc='best')
-            cx.grid(True)
-            cx.set_xticks([])
-            cx.set_title('MACD Oscillator')
+        # Generate the price image
+        fig, ax = plt.subplots()
+        df['Close'].plot(label=TICKER, ax=ax)
+        ax.plot(signals.loc[signals['signals'] == 1].index, signals['Close'][signals['signals'] == 1], '^', markersize=10, color='g', lw=0, label='LONG')
+        ax.plot(signals.loc[signals['signals'] == -1].index, signals['Close'][signals['signals'] == -1], 'v', markersize=10, color='r', lw=0, label='SHORT')
+        plt.legend(loc='best')
+        plt.grid(True)
+        plt.title('Positions')
+        figfile = BytesIO()
+        plt.savefig(figfile, format='jpeg')
+        figfile.seek(0)
+        price_image = base64.b64encode(figfile.getvalue()).decode()
+        print(f"Price image Base64 length: {len(price_image)}")  # Log the length of the Base64 string
+        plt.close(fig)
 
-            signals['ma1'].plot(label='ma1', ax=bx)
-            signals['ma2'].plot(label='ma2', linestyle=':', ax=bx)
-            bx.legend(loc='best')
-            bx.grid(True)
-            figfile1 = BytesIO()
-            plt.savefig(figfile1, format='png')
-            figfile1.seek(0)
-            oscillator_image = base64.b64encode(figfile1.getvalue()).decode()
-            plt.close(fig)
-        except Exception as e:
-            print(f"Error fetching or generating MACD chart: {e}")
+        # Generate the oscillator image
+        fig, (cx, bx) = plt.subplots(nrows=2, ncols=1)
+        signals['oscillator'].plot(kind='bar', color='r', ax=cx)
+        cx.legend(loc='best')
+        cx.grid(True)
+        cx.set_xticks([])
+        cx.set_title('MACD Oscillator')
 
-        # Fetch and update every 10 minutes
-        time.sleep(600000)
+        signals['ma1'].plot(label='ma1', ax=bx)
+        signals['ma2'].plot(label='ma2', linestyle=':', ax=bx)
+        bx.legend(loc='best')
+        bx.grid(True)
+        figfile1 = BytesIO()
+        plt.savefig(figfile1, format='jpeg')
+        figfile1.seek(0)
+        oscillator_image = base64.b64encode(figfile1.getvalue()).decode()
+        print(f"Oscillator image Base64 length: {len(oscillator_image)}")  # Log the length of the Base64 string
+        plt.close(fig)
+    except Exception as e:
+        print(f"Error fetching or generating MACD chart: {e}")
 
 def fetch_and_generate_rsi_chart():
     global rsi_price_image, rsi_image
-    while True:
-        try:
-            end_date = datetime.today().strftime('%Y-%m-%d')
-            df = yf.download(TICKER, start=start_date, end=end_date)
-         
-            new = rsi_signal_generation(df, rsi, n=14)
-            # Generate and save the price image
-            fig, ax = plt.subplots()
-            new['Close'].plot(label=TICKER, ax=ax)
-            ax.plot(new.loc[new['signals'] == 1].index, new['Close'][new['signals'] == 1], '^', markersize=10, color='g', lw=0, label='LONG')
-            ax.plot(new.loc[new['signals'] == -1].index, new['Close'][new['signals'] == -1], 'v', markersize=10, color='r', lw=0, label='SHORT')
-            plt.legend(loc='best')
-            plt.grid(True)
-            plt.title('Positions')
-            figfile2 = BytesIO()
-            plt.savefig(figfile2, format='png')
-            figfile2.seek(0)
-            rsi_price_image = base64.b64encode(figfile2.getvalue()).decode()
-            plt.close(fig)
-        
-            # Plot and save the RSI image
-            fig, bx = plt.subplots()
-            new['rsi'][14:].plot(label='relative strength index', c='#522e75', ax=bx)
-            bx.fill_between(new.index, 30, 70, alpha=0.5, color='#f22f08')
-            bx.text(new.index[-45], 75, 'overbought', color='#594346', size=12.5)
-            bx.text(new.index[-45], 25, 'oversold', color='#594346', size=12.5)
-            plt.xlabel('Date')
-            plt.ylabel('value')
-            plt.title('RSI')
-            plt.legend(loc='best')
-            plt.grid(True)
-            figfile3 = BytesIO()
-            plt.savefig(figfile3, format='png')
-            figfile3.seek(0)
-            rsi_image = base64.b64encode(figfile3.getvalue()).decode()
-            plt.close(fig)
-        except Exception as e:
-            print(f"Error fetching or generating RSI chart: {e}")
-
-        # Fetch and update every 10 minutes
-        time.sleep(600000)
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        df = yf.download(TICKER, start=start_date, end=end_date)
+     
+        new = rsi_signal_generation(df, rsi, n=14)
+        # Generate and save the price image
+        fig, ax = plt.subplots()
+        new['Close'].plot(label=TICKER, ax=ax)
+        ax.plot(new.loc[new['signals'] == 1].index, new['Close'][new['signals'] == 1], '^', markersize=10, color='g', lw=0, label='LONG')
+        ax.plot(new.loc[new['signals'] == -1].index, new['Close'][new['signals'] == -1], 'v', markersize=10, color='r', lw=0, label='SHORT')
+        plt.legend(loc='best')
+        plt.grid(True)
+        plt.title('Positions')
+        figfile2 = BytesIO()
+        plt.savefig(figfile2, format='jpeg')
+        figfile2.seek(0)
+        rsi_price_image = base64.b64encode(figfile2.getvalue()).decode()
+        print(f"RSI price image Base64 length: {len(rsi_price_image)}")  # Log the length of the Base64 string
+        plt.close(fig)
+    
+        # Plot and save the RSI image
+        fig, bx = plt.subplots()
+        new['rsi'][14:].plot(label='relative strength index', c='#522e75', ax=bx)
+        bx.fill_between(new.index, 30, 70, alpha=0.5, color='#f22f08')
+        bx.text(new.index[-45], 75, 'overbought', color='#594346', size=12.5)
+        bx.text(new.index[-45], 25, 'oversold', color='#594346', size=12.5)
+        plt.xlabel('Date')
+        plt.ylabel('value')
+        plt.title('RSI')
+        plt.legend(loc='best')
+        plt.grid(True)
+        figfile3 = BytesIO()
+        plt.savefig(figfile3, format='jpeg')
+        figfile3.seek(0)
+        rsi_image = base64.b64encode(figfile3.getvalue()).decode()
+        print(f"RSI image Base64 length: {len(rsi_image)}")  # Log the length of the Base64 string
+        plt.close(fig)
+    except Exception as e:
+        print(f"Error fetching or generating RSI chart: {e}")
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/generate_macd_chart', methods=['POST'])
+def generate_macd_chart():
+    fetch_and_generate_chart()
+    return jsonify({'status': 'MACD chart generated'})
+
+@app.route('/generate_rsi_chart', methods=['POST'])
+def generate_rsi_chart():
+    fetch_and_generate_rsi_chart()
+    return jsonify({'status': 'RSI chart generated'})
 
 @app.route('/get_profit')
 def get_profit():
@@ -206,7 +210,5 @@ def get_rsi_image_route():
     return jsonify({'image': rsi_image})
 
 if __name__ == '__main__':
-    Thread(target=fetch_and_generate_chart, daemon=True).start()
-    Thread(target=fetch_and_generate_rsi_chart, daemon=True).start()
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
